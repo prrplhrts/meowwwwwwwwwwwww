@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concurrency Demo - Flash Sale</title>
+    
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+
+    <div class="card">
+        <img src="images/pic.jpg" alt="Car" class="product-image">
+        
+        <h1>LIMITED EDITION - RARE -  Porsche 911</h1>
+        <div class="price">₱15,000,000.00</div>
+        
+        <div class="stock-indicator">
+            🔥 HURRY! ONLY 1 LEFT
+        </div>
+
+        <button id="buyBtn" class="btn" onclick="attemptPurchase()">BUY NOW</button>
+        
+        <div id="statusMessage" class="status"></div>
+    </div>
+
+    <script>
+        async function attemptPurchase() {
+            const btn = document.getElementById('buyBtn');
+            const msg = document.getElementById('statusMessage');
+
+            // 1. UI UPDATE: Disable button
+            btn.disabled = true;
+            btn.innerText = "Processing Transaction...";
+            msg.style.display = 'none';
+
+            try {
+                // 2. CONNECT TO BACKEND
+                const response = await fetch('http://localhost:3000/buy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+
+                // 3. UPDATE UI 
+                if (result.success) {
+                    msg.innerText = "🎉 " + result.message;
+                    msg.className = "status success";
+                    btn.innerText = "Purchased";
+                } else {
+                    msg.innerText = "❌ " + result.message;
+                    msg.className = "status error";
+                    btn.innerText = "Sold Out";
+                }
+                msg.style.display = 'block';
+
+            } catch (error) {
+                console.error("Connection Error:", error);
+                msg.innerText = "Error: Could not connect to server.";
+                msg.className = "status error";
+                msg.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = "BUY NOW";
+            }
+        }
+    </script>
+</body>
+</html>
